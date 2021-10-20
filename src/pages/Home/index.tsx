@@ -7,19 +7,24 @@ import {
   Table,
   Tbody,
   Tr,
-  Td
+  Td,
+  Spinner
 } from '@chakra-ui/react';
 import DatePicker from 'react-date-picker';
+import { toast } from 'react-toastify';
 import { Account, getBalance, Statement, getStatements } from '../../services/accounts';
 import { Chart, registerables } from 'chart.js';
 import { dateToStr } from '../helpers/date-helper';
+import { useAuth } from '../../contexts/auth';
 Chart.register(...registerables);
 
 const Home: FC = () => {
+  const { signOut } = useAuth();
   const [balance, setBalance] = useState<number>(0);
   const [statements, setStatements] = useState<Statement[]>([]);
   const [initialDate, setInitialDate] = useState(new Date());
   const [finalDate, setFinalDate] = useState(new Date());
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     getBalance().then((account: Account) => setBalance(account.balance));
@@ -57,14 +62,37 @@ const Home: FC = () => {
   }, []);
 
   const handleClick = () => {
-    getStatements(dateToStr(initialDate), dateToStr(finalDate)).then((stats: Statement[]) => setStatements(stats));
+    setLoading(true);
+    getStatements(dateToStr(initialDate), dateToStr(finalDate))
+      .then((stats: Statement[]) => {
+        if (stats.length === 0) {
+          toast.info('Nenhum registro de transação encontrado para a data informada');
+        } else {
+          setStatements(stats);
+        }
+      })
+      .catch(err => {
+        toast.error(
+          err.response && err.response.data
+            ? err.response.data.msg
+            : { message: 'Não foi possível trazer os dados desse usuário' }
+        );
+      })
+      .finally(() => setLoading(false));
+  };
+
+  const handleSignout = () => {
+    signOut();
   };
 
   return (
     <Flex>
-      <Box w="150px" p="4" bg="tomato">
+      <Box w="150px" p="4">
         <Text>Saldo:</Text>
         <Text>R$ {String(balance/100).replace('.', ',')}</Text>
+        <Button colorScheme="teal" variant="outline" onClick={handleSignout}>
+          Sair
+        </Button>
       </Box>
 
       <Box flex="1" p="4">
@@ -97,7 +125,15 @@ const Home: FC = () => {
 
         {/* <canvas id="myChart"></canvas> */}
 
-        {statements.length === 0
+        {loading ? (
+          <Spinner
+            thickness="4px"
+            speed="0.65s"
+            emptyColor="gray.200"
+            color="blue.500"
+            size="xl"
+          />
+        ) : statements.length === 0
           ? <div>Informe as datas de início e fim, depois clique em pesquisar.</div>
           : (
               <Table variant="simple" mt="5">
