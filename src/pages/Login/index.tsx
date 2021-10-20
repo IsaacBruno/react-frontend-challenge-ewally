@@ -17,6 +17,7 @@ import {
   FormikState
 } from 'formik';
 import * as Yup from 'yup';
+import { toast } from 'react-toastify';
 import { useAuth } from '../../contexts/auth';
 
 const LoginSchema = Yup.object().shape({
@@ -47,9 +48,15 @@ const Login: FC = () => {
             initialValues={initialValues}
             validationSchema={LoginSchema}
             onSubmit={async (values, actions) => {
-              console.log({ values, actions });
-              signIn();
-              actions.setSubmitting(false);
+              signIn(values.username, values.password)
+                .catch(err => {
+                  toast.error(
+                    err.response && err.response.data
+                      ? err.response.data.msg
+                      : { message: 'Não foi possível trazer os dados desse usuário' }
+                  );
+                })
+                .finally(() => actions.setSubmitting(false));
             }}
           >
             {({ isSubmitting }) => (
