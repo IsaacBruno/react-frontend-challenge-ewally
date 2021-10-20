@@ -5,6 +5,7 @@ import api from '../services/api';
 
 interface AuthContextData {
   signed: boolean;
+  token: string | null;
   signIn(): Promise<void>;
   signOut(): void;
 }
@@ -17,11 +18,12 @@ export const AuthProvider: FC = ({ children }) => {
   useEffect(() => {
     function loadStorageData() {
       const storagedToken = localStorage.getItem('@EwallyAuth:token');
-      console.log(storagedToken);
 
       if (storagedToken) {
         setToken(storagedToken);
-        api.defaults.headers.common['Authorization'] = `Bearer ${storagedToken}`;
+        // api.defaults.headers.common['Authorization'] = `Bearer ${storagedToken}`;
+        // @ts-ignore
+        // api.defaults.headers.Authorization = `Bearer ${storagedToken}`;
       }
 
       // setLoading(false);
@@ -35,7 +37,7 @@ export const AuthProvider: FC = ({ children }) => {
     const { token } = response;
     setToken(token);
 
-    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    // api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
     localStorage.setItem('@EwallyAuth:token', token);
   }
@@ -46,7 +48,7 @@ export const AuthProvider: FC = ({ children }) => {
   }
 
   return (
-    <AuthContext.Provider value={{ signed: !!token, signIn, signOut }}>
+    <AuthContext.Provider value={{ signed: !!token, token, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   )

@@ -6,7 +6,7 @@ export function signIn(): Promise<Response> {
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve({
-        token: 'jk12h3j21h3jk212h3jk12h3jkh12j3kh12k123hh21g3f12f3'
+        token: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VybmFtZSI6InRlc3RGcm9udEV3YWxseSIsImFjY291bnROYW1lIjoiODQyNTEzMDkwMDAxNDQiLCJzZXNzaW9uSWQiOjE2MzQ3NTkyNzM3MjB9._zF3awzvEXN6wAdZe9IqbKZfCEaS1lvf4oX4y2x9_Us'
       });
     }, 2000);
   });

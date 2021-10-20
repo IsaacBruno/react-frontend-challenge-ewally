@@ -1,4 +1,4 @@
-import React, { FC, useEffect } from 'react';
+import React, { FC, useEffect, useState } from 'react';
 import {
   Flex,
   Box,
@@ -10,11 +10,16 @@ import {
   Td
 } from '@chakra-ui/react';
 import DatePicker from 'react-date-picker';
+import { Account, getBalance } from '../../services/accounts';
 import { Chart, registerables } from 'chart.js';
 Chart.register(...registerables);
 
 const Home: FC = () => {
+  const [balance, setBalance] = useState(0);
+
   useEffect(() => {
+    getBalance().then((account: Account) => setBalance(account.balance));
+
     // @ts-ignore
     // const ctx = window.document.getElementById('myChart').getContext('2d');
     // new Chart(ctx, {
@@ -51,7 +56,7 @@ const Home: FC = () => {
     <Flex>
       <Box w="150px" p="4" bg="tomato">
         <Text>Saldo:</Text>
-        <Text>R$ 123,45</Text>
+        <Text>R$ {String(balance/100).replace('.', ',')}</Text>
       </Box>
 
       <Box flex="1" p="4">

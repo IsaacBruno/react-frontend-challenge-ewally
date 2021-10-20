@@ -13,8 +13,6 @@ interface CustomRouteProps extends RouteProps {
 const CustomRoute: FC<CustomRouteProps> = ({ component: Component, isPrivate, ...rest }) => {
   const { signed } = useAuth();
 
-  console.log(isPrivate, signed);
-  
   if (isPrivate && !localStorage.getItem('@EwallyAuth:token')) {
     return <Redirect to="/login" />;
   }
