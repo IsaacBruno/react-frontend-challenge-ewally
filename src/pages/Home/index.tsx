@@ -10,12 +10,16 @@ import {
   Td
 } from '@chakra-ui/react';
 import DatePicker from 'react-date-picker';
-import { Account, getBalance } from '../../services/accounts';
+import { Account, getBalance, Statement, getStatements } from '../../services/accounts';
 import { Chart, registerables } from 'chart.js';
+import { dateToStr } from '../helpers/date-helper';
 Chart.register(...registerables);
 
 const Home: FC = () => {
-  const [balance, setBalance] = useState(0);
+  const [balance, setBalance] = useState<number>(0);
+  const [statements, setStatements] = useState<Statement[]>([]);
+  const [initialDate, setInitialDate] = useState(new Date());
+  const [finalDate, setFinalDate] = useState(new Date());
 
   useEffect(() => {
     getBalance().then((account: Account) => setBalance(account.balance));
@@ -52,6 +56,10 @@ const Home: FC = () => {
     // });
   }, []);
 
+  const handleClick = () => {
+    getStatements(dateToStr(initialDate), dateToStr(finalDate)).then((stats: Statement[]) => setStatements(stats));
+  };
+
   return (
     <Flex>
       <Box w="150px" p="4" bg="tomato">
@@ -63,13 +71,25 @@ const Home: FC = () => {
         <Flex>
           <Box mr="4">Extrato:</Box>
           <Box mr="4">
-            <DatePicker />
+            <DatePicker
+              format="dd-MM-yyyy"
+              onChange={(value: Date) => {
+                setInitialDate(value);
+              }}
+              value={initialDate}
+            />
           </Box>
           <Box mr="4">
-            <DatePicker />
+            <DatePicker
+              format="dd-MM-yyyy"
+              onChange={(value: Date) => {
+                setFinalDate(value);
+              }}
+              value={finalDate}
+            />
           </Box>
           <Box>
-            <Button colorScheme="blue" variant="outline">
+            <Button colorScheme="blue" variant="outline" onClick={handleClick}>
               Pesquisar
             </Button>
           </Box>
@@ -77,25 +97,22 @@ const Home: FC = () => {
 
         {/* <canvas id="myChart"></canvas> */}
 
-        <Table variant="simple" mt="5">
-          <Tbody>
-            <Tr>
-              <Td>{`{Data}`}</Td>
-              <Td>Pagamento de boleto</Td>
-              <Td>- R$ 100,00</Td>
-            </Tr>
-            <Tr>
-              <Td>{`{Data}`}</Td>
-              <Td>Depósito</Td>
-              <Td>+ R$ 200,00</Td>
-            </Tr>
-            <Tr>
-              <Td>{`{Data}`}</Td>
-              <Td>Compra com cartão</Td>
-              <Td>- R$ 300,00</Td>
-            </Tr>
-          </Tbody>
-        </Table>
+        {statements.length === 0
+          ? <div>Informe as datas de início e fim, depois clique em pesquisar.</div>
+          : (
+              <Table variant="simple" mt="5">
+                <Tbody>
+                  {statements.map((statement: Statement) => (
+                    <Tr>
+                      <Td>{statement.createdAt}</Td>
+                      <Td>{statement.description}</Td>
+                      <Td>- R$ {String(statement.balance/100).replace('.', ',')}</Td>
+                    </Tr>
+                  ))}
+                </Tbody>
+              </Table>
+            )
+        }
       </Box>
     </Flex>
   )
